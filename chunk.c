@@ -8,5 +8,17 @@ void initChunk(Chunk* chunk) {
 }
 
 void writeChunk(Chunk* chunk, uint8_t byte) {
-  // TODO: do this
+  if (chunk->capacity < chunk->count + 1) {
+    int oldCapacity = chunk->capacity;
+    chunk->capacity = GROW_CAPACITY(oldCapacity);
+    chunk->code = GROW_ARRAY(
+      uint8_t,
+      chunk->code, 
+      oldCapacity, 
+      chunk->capcity
+    );
+  }
+
+  chunk->code[chunk->count] = byte;
+  chunk->count++;
 }
