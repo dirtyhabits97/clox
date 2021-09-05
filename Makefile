@@ -5,7 +5,7 @@ OUTPUT = clox
 default: build
 
 build:
-	$(CC) *.c -o $(OUTPUT)
+	$(CC) Sources/*.c -o $(OUTPUT)
 
 clean:
 	$(RM) $(OUTPUT)
