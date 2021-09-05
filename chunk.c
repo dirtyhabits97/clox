@@ -16,7 +16,7 @@ void writeChunk(Chunk* chunk, uint8_t byte) {
       uint8_t,
       chunk->code, 
       oldCapacity, 
-      chunk->capcity
+      chunk->capacity
     );
   }
 
