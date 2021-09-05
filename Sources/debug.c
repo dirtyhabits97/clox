@@ -26,6 +26,12 @@ static int simpleInstruction(const char* name, int offset) {
 int disassembleInstruction(Chunk* chunk, int offset) {
   // 1. print the byte offset of the given instruction
   printf("%04d ", offset);
+  // now add the line to help when debugging
+  if (offset > 0 && chunk->lines[offset] == chunk->lines[offset-1]) {
+    printf("   | ");
+  } else {
+    printf("%4d ", chunk->lines[offset]);
+  }
 
   // 2. read a single byte from the bytecode at the given offset
   // that byte is our opcode
