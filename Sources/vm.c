@@ -5,7 +5,7 @@
 
 VM vm;
 
-static void resetSTack() {
+static void resetStack() {
   vm.stackTop = vm.stack;
 }
 
@@ -32,6 +32,13 @@ static InterpretResult run() {
   for (;;) {
 
 #ifdef DEBUG_TRACE_EXECUTION
+    printf("          ");
+    for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
+      printf("[ ");
+      printValue(*slot);
+      printf(" ]");
+    }
+    printf("\n");
     // Since disassembleInstruction() takes an integer byte offset 
     // and we store the current instruction reference as a direct pointer, 
     // we first do a little pointer math to convert ip back to a relative 
@@ -47,11 +54,12 @@ static InterpretResult run() {
     switch (instruction = READ_BYTE()) {
       case OP_CONSTANT: {
         Value constant = READ_CONSTANT();
-        printValue(constant);
-        printf("\n");
+        push(constant);
         break;
       }
       case OP_RETURN: {
+        printValue(pop());
+        printf("\n");
         return INTERPRET_OK;
       }
     }
