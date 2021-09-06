@@ -1,5 +1,7 @@
 #include <stdio.h>
+
 #include "common.h"
+#include "compiler.h"
 #include "debug.h"
 #include "vm.h"
 
@@ -82,10 +84,11 @@ static InterpretResult run() {
 #undef BINARY_OP
 }
 
-InterpretResult interpret(Chunk* chunk) {
-  vm.chunk = chunk;
+InterpretResult interpret(const char* source) {
+  compile(source);
+  /*vm.chunk = chunk;*/
   // ip: instruction pointer
-  vm.ip = vm.chunk->code;
+  /*vm.ip = vm.chunk->code;*/
   // internal helper that runs the bytecode instructions
   return run();
 }
