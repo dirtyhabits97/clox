@@ -85,10 +85,21 @@ static InterpretResult run() {
 }
 
 InterpretResult interpret(const char* source) {
-  compile(source);
-  /*vm.chunk = chunk;*/
+  Chunk chunk;
+  initChunk(&chunk);
+
+  if (!compile(source, &chunk)) {
+    freeChunk(&chunk);
+    return INTERPRET_COMPILE_ERROR;
+  }
+
+  vm.chunk = &chunk;
   // ip: instruction pointer
-  /*vm.ip = vm.chunk->code;*/
+  vm.ip = vm.chunk->code;
+
   // internal helper that runs the bytecode instructions
-  return run();
+  InterpretResult result = run();
+
+  freeChunk(&chunk);
+  return result;
 }
