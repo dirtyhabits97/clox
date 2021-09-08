@@ -118,7 +118,9 @@ static void endCompiler() {
   emitReturn();
 }
 
+// We need these because of our recursive calls
 static void expression();
+static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
 static void binary() {
@@ -203,6 +205,10 @@ ParseRule rules[] = {
 
 static void parsePrecedence(Precedence precedence) {
   // What goes here?
+}
+
+static ParseRule* getRule(TokenType type) {
+  return &rules[type];
 }
 
 static void expression() {
