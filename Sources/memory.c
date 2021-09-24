@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "chunk.h"
+#include "compiler.h"
 #include "memory.h"
 #include "vm.h"
 
@@ -29,6 +30,40 @@ void* reallocate(
   void* result = realloc(pointer, newSize);
   if (result == NULL) exit(1);
   return result;
+}
+
+void markObject(Obj* object) {
+  if (object == NULL) return;
+#ifdef DEBUG_LOG_GC
+  printf("%p mark ", (void*)object);
+  printValue(OBJ_VAL(object));
+  printf("\n");
+#endif
+
+  object->isMarked = true;
+}
+
+void markValue(Value value) {
+  if (IS_OBJ(value)) markObject(AS_OBJ(value));
+}
+
+static void markRoots() {
+  for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
+    markValue(*slot);
+  }
+
+  for(int i = 0; i < vm.frameCount; i++) {
+    markObject((Obj*)vm.frames[i].closure);
+  }
+
+  for (ObjUpvalue* upvalue = vm.openUpvalues;
+       upvalue != NULL;
+       upvalue = upvalue->next) {
+    markObject((Obj*)upvalue);
+  }
+
+  markTable(&vm.globals);
+  markCompilerRoots();
 }
 
 static void freeObject(Obj* object) {
@@ -68,6 +103,8 @@ void collectGarbage() {
 #ifdef DEBUG_LOG_GC
   printf("-- gc begin\n");
 #endif
+
+  markRoots();
 
 #ifdef DEBUG_LOG_GC
   printf("-- gc end\n");
