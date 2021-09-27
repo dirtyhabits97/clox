@@ -213,7 +213,7 @@ static ObjFunction* endCompiler() {
 #ifdef DEBUG_PRINT_CODE
   if (!parser.hadError) {
     disassembleChunk(
-      currentChunk(), 
+      currentChunk(),
       function->name == NULL ? "<script>" : function->name->chars
     );
   }
@@ -230,7 +230,7 @@ static void beginScope() {
 static void endScope() {
   current->scopeDepth--;
 
-  while (current->localCount > 0 && 
+  while (current->localCount > 0 &&
          current->locals[current->localCount - 1].depth > current->scopeDepth) {
     if (current->locals[current->localCount - 1].isCaptured) {
       emitByte(OP_CLOSE_UPVALUE);
@@ -465,7 +465,7 @@ static void unary(bool canAssign) {
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN]    = {grouping, call,   PREC_CALL},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE}, 
+  [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_DOT]           = {NULL,     NULL,   PREC_NONE},
@@ -597,6 +597,18 @@ static void function(FunctionType type) {
   }
 }
 
+static void classDeclaration() {
+  consume(TOKEN_IDENTIFIER, "Expect class name.");
+  uint8_t nameConstant = identifierConstant(&parser.previous);
+  declareVariable();
+
+  emitBytes(OP_CLASS, nameConstant);
+  defineVariable(nameConstant);
+
+  consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+  consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+}
+
 static void funDeclaration() {
   uint8_t global = parseVariable("Expect function name.");
   markInitialized();
@@ -677,7 +689,7 @@ static void ifStatement() {
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
   int thenJump = emitJump(OP_JUMP_IF_FALSE);
-  // When the condition is truthy, 
+  // When the condition is truthy,
   // we pop it right before the code inside the thenBranch.
   emitByte(OP_POP);
   statement();
@@ -749,14 +761,16 @@ static void synchronize() {
 }
 
 static void declaration() {
-  if (match(TOKEN_FUN)) {
+  if (match(TOKEN_CLASS)) {
+    classDeclaration();
+  } else if (match(TOKEN_FUN)) {
     funDeclaration();
   } else if (match(TOKEN_VAR)) {
     varDeclaration();
   } else {
     statement();
   }
-  
+
   if (parser.panicMode) synchronize();
 }
 
