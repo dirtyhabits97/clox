@@ -186,6 +186,7 @@ void collectGarbage() {
 #endif
 
   markRoots();
+  tableRemoveWhite(&vm.strings);
   traceReferences();
   sweep();
 
