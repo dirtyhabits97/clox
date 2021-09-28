@@ -123,6 +123,11 @@ static bool call(ObjClosure* closure, int argcount) {
 static bool callValue(Value callee, int argCount) {
   if (IS_OBJ(callee)) {
     switch (OBJ_TYPE(callee)) {
+      case OBJ_CLASS: {
+        ObjClass* klass = AS_CLASS(callee);
+        vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
+        return true;
+      }
       case OBJ_CLOSURE:
         return call(AS_CLOSURE(callee), argCount);
       case OBJ_NATIVE: {
@@ -228,10 +233,10 @@ static InterpretResult run() {
       printf(" ]");
     }
     printf("\n");
-    // Since disassembleInstruction() takes an integer byte offset 
-    // and we store the current instruction reference as a direct pointer, 
-    // we first do a little pointer math to convert ip back to a relative 
-    // offset from the beginning of the bytecode. 
+    // Since disassembleInstruction() takes an integer byte offset
+    // and we store the current instruction reference as a direct pointer,
+    // we first do a little pointer math to convert ip back to a relative
+    // offset from the beginning of the bytecode.
     // Then we disassemble the instruction that begins at that byte.
     disassembleInstruction(
       &frame->closure->function->chunk,
@@ -322,7 +327,7 @@ static InterpretResult run() {
       case OP_NOT:
         push(BOOL_VAL(isFalsey(pop())));
         break;
-      case OP_NEGATE: 
+      case OP_NEGATE:
         if (!IS_NUMBER(peek(0))) {
           runtimeError("Operand must be a number.");
           return INTERPRET_RUNTIME_ERROR;
@@ -409,10 +414,10 @@ InterpretResult interpret(const char* source) {
   ObjFunction* function = compile(source);
   if (function == NULL) return INTERPRET_COMPILE_ERROR;
 
-  // The code looks a little silly because we still push the original ObjFunction onto the stack. 
+  // The code looks a little silly because we still push the original ObjFunction onto the stack.
   // Then we pop it after creating the closure, only to then push the closure. Why put the
-  // ObjFunction on there at all? 
-  // As usual, when you see weird stack stuff going on, it’s to keep the forthcoming garbage collector 
+  // ObjFunction on there at all?
+  // As usual, when you see weird stack stuff going on, it’s to keep the forthcoming garbage collector
   // aware of some heap-allocated objects.
   push(OBJ_VAL(function));
   ObjClosure* closure = newClosure(function);

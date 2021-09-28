@@ -10,10 +10,10 @@
 #define ALLOCATE_OBJ(type, objectType) \
   (type*)allocateObject(sizeof(type), objectType)
 
-// It allocates an object of the given size on the heap. 
-// Note that the size is not just the size of Obj itself. 
-// The caller passes in the number of bytes so that there is room 
-// for the extra payload fields needed by the specific object type 
+// It allocates an object of the given size on the heap.
+// Note that the size is not just the size of Obj itself.
+// The caller passes in the number of bytes so that there is room
+// for the extra payload fields needed by the specific object type
 // being created.
 static Obj* allocateObject(size_t size, ObjType type) {
   Obj* object = (Obj*)reallocate(NULL, 0, size);
@@ -58,6 +58,13 @@ ObjFunction* newFunction() {
   return function;
 }
 
+ObjInstance* newInstance(ObjClass* klass) {
+  ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+  instance->klass = klass;
+  initTable(&instance->fields);
+  return instance;
+}
+
 ObjNative* newNative(NativeFn function) {
   ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
   native->function = function;
@@ -65,7 +72,7 @@ ObjNative* newNative(NativeFn function) {
 }
 
 static ObjString* allocateString(
-    char* chars, 
+    char* chars,
     int length,
     uint32_t hash
 ) {
@@ -133,6 +140,9 @@ static void printFunction(ObjFunction* function) {
 
 void printObject(Value value) {
   switch (OBJ_TYPE(value)) {
+    case OBJ_INSTANCE:
+      printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+      break;
     case OBJ_CLASS:
       printf("%s", AS_CLASS(value)->name->chars);
       break;
